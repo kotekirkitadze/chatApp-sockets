@@ -37,6 +37,23 @@
 
         <div class="chat-footer">
 
+          <div class="row">
+            <div class="col-md-10">
+              <div class="form-group mb-0">
+                <input type="text"
+                       placeholder="Type a message"
+                       [(ngModel)]="messageText"
+                       (keyup)="$event.keyCode === 13 && sendMessage()">
+              </div>
+            </div>
+            <div class="col-md-2 text-center align-self-center">
+              <button class="btn btn-primary btn-sm px-3"
+                      (click)="sendMessage()">
+                Send
+              </button>
+            </div>
+          </div>
+
         </div>
       </ng-container>
     </div>

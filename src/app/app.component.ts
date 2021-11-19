@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ChatService } from './services/chat/chat.service';
 
 @Component({
@@ -6,11 +7,34 @@ import { ChatService } from './services/chat/chat.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewInit {
   public roomId: string;
   public messageText: string;
   public messageArray: { user: string, message: string }[] = [];
 
+  public showScreen: boolean;
+
+  @ViewChild('popup', { static: false }) popup: any;
+
+  ngAfterViewInit() {
+    this.openPopup(this.popup)
+
+  }
+
+  openPopup(content: any): void {
+    this.modalService.open(content, { backdrop: 'static', centered: true });
+  }
+
+  login(dismiss: any): void {
+    this.currentUser = this.userList.find(user => user.phone === this.phone?.toString().toLowerCase());
+    this.userList = this.userList.filter((user) => user.phone !== this.phone?.toString().toLowerCase());
+
+
+    if (this.currentUser) {
+      this.showScreen = true;
+      dismiss();
+    }
+  }
 
   public phone: string;
   public currentUser;
@@ -63,15 +87,14 @@ export class AppComponent implements OnInit {
     }
   ];
 
-  constructor(private chatService: ChatService) {
+  constructor(private chatService: ChatService, private modalService: NgbModal) {
+  }
+
+  ngOnInit() {
     this.chatService.getMessage()
       .subscribe((data: { user: string; message: string }) => {
         this.messageArray.push(data)
       })
-  }
-
-  ngOnInit() {
-    this.currentUser = this.userList[0];
   }
 
   selectUserHandler(phone: string): void {

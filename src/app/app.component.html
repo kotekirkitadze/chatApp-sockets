@@ -1,4 +1,4 @@
-<div class="container-fluid">
+<div class="container-fluid" *ngIf="showScreen">
   <div class="row">
 
     <div class="user-list-card">
@@ -43,6 +43,7 @@
                 <input type="text"
                        placeholder="Type a message"
                        [(ngModel)]="messageText"
+                       class="form-control"
                        (keyup)="$event.keyCode === 13 && sendMessage()">
               </div>
             </div>
@@ -60,3 +61,27 @@
   </div>
 
 </div>
+
+
+<ng-template #popup let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">Login</h4>
+  </div>
+
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="form-group">
+          <input type="number"
+                 placeholder="Enter your phone number"
+                 class="form-control"
+                 [(ngModel)]="phone">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-sm btn-primary" (click)="login(d)">Login</button>
+  </div>
+</ng-template>

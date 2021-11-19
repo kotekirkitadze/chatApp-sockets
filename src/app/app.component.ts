@@ -12,6 +12,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   public messageText: string;
   public messageArray: { user: string, message: string }[] = [];
 
+  private storageArray = [];
+
   public showScreen: boolean;
 
   @ViewChild('popup', { static: false }) popup: any;
@@ -26,7 +28,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   login(dismiss: any): void {
-    this.currentUser = this.userList.find(user => user.phone === this.phone?.toString().toLowerCase());
+    this.currentUser = this.userList?.find(user => user.phone === this.phone?.toString().toLowerCase());
     this.userList = this.userList.filter((user) => user.phone !== this.phone?.toString().toLowerCase());
 
 
@@ -34,6 +36,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.showScreen = true;
       dismiss();
     }
+    console.log(this.currentUser)
   }
 
   public phone: string;
@@ -44,7 +47,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     {
       id: 1,
       name: "Bill",
-      phone: '595565656',
+      phone: '11',
       image: 'assets/user/user-1.png',
       roomId: {
         2: 'room-1',
@@ -55,7 +58,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     {
       id: 2,
       name: "Bob",
-      phone: '595565656',
+      phone: '22',
       image: 'assets/user/user-2.png',
       roomId: {
         1: 'room-1',
@@ -66,7 +69,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     {
       id: 3,
       name: "Ben",
-      phone: '2131312',
+      phone: '33',
       image: 'assets/user/user-3.png',
       roomId: {
         1: 'room-2',
@@ -77,7 +80,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     {
       id: 4,
       name: "Bernand",
-      phone: '543213112',
+      phone: '44',
       image: 'assets/user/user-4.png',
       roomId: {
         1: 'room-3',
@@ -93,29 +96,66 @@ export class AppComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     this.chatService.getMessage()
       .subscribe((data: { user: string; message: string }) => {
-        this.messageArray.push(data)
+        // this.messageArray.push(data)
+        setTimeout(() => {
+          if (this.roomId) {
+            this.storageArray = this.chatService.getStorage();
+            const storeIndex = this.storageArray?.findIndex(storage => storage.roomId === this.roomId);
+            this.messageArray = this.storageArray[storeIndex].chats;
+          }
+        }, 5000)
       })
   }
 
   selectUserHandler(phone: string): void {
-    this.selectedUser = this.userList.find(user => user.phone === phone);
-    this.roomId = this.selectedUser.roomId[this.selectedUser.id];
+    this.selectedUser = this.userList?.find(user => user.phone === phone);
+    this.roomId = this.selectedUser.roomId[this.currentUser.id];
     this.messageArray = [];
+
+    this.storageArray = this.chatService.getStorage();
+    const storeIndex = this.storageArray?.findIndex(storage => storage.roomId === this.roomId)
+
+    if (storeIndex > -1) {
+      this.messageArray = this.storageArray[storeIndex].chats
+    }
 
     this.join(this.currentUser.name, this.roomId);
   }
 
   join(username: string, roomId: string): void {
-    this.chatService.joinRoom({ user: username, roomId: roomId })
+    this.chatService.joinRoom({ user: username, room: roomId })
   }
 
   sendMessage(): void {
     this.chatService.sendMessage({
-      data: this.currentUser.name,
+      user: this.currentUser.name,
       room: this.roomId,
       message: this.messageText
     });
 
+    this.storageArray = this.chatService.getStorage();
+    const storeIndex = this.storageArray.findIndex(storage => storage.roomId == this.roomId);
+
+    if (storeIndex > -1) {
+      this.storageArray[storeIndex].chats.push({
+        user: this.currentUser.name,
+        message: this.messageText
+      });
+    } else {
+      const updateStorage = {
+        roomId: this.roomId,
+        chats: [{
+          user: this.currentUser.name,
+          message: this.messageText
+        }]
+      };
+      this.storageArray.push(updateStorage);
+    }
+
+    this.chatService.setStorage(this.storageArray);
+
+    console.log(this.messageArray)
     this.messageText = '';
   }
+
 }
